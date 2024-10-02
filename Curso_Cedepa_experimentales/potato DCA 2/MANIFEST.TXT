@@ -1,0 +1,4 @@
+01_Experiments without control LB.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 25949 bytes.
+02_Experiments with LB control.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 22255 bytes.
+03_Experiments Phenotypic Stabilit.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 29010 bytes.
+Data_dictionary.xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) 9362 bytes.
