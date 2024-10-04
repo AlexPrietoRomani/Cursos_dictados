@@ -74,8 +74,6 @@ cv.model(anova_a)
 
 shapiro_a <- shapiro.test(anova_a$residuals)
 
-summary(shapiro_a)
-
 print(shapiro_a)
 
 # GRaficos de Normalidad (Q-Q plots)
@@ -123,14 +121,7 @@ bar.group(tukey_a$groups, horiz = FALSE,
 # -----------------------------
 
 # 3.1. Cargar el Dataset B
-datos_b <- read_csv("DBCA_datos_no_normal.csv",show_col_types = FALSE)
-
-# Convertir 'trt' y 'block' a factores
-datos_b <- datos_b %>%
-  mutate(
-    trt = factor(trt, levels = trt_levels),
-    block = factor(block, levels = block_levels)
-  )
+datos_b <- read_csv("Cursos_dictados/Curso_Cedepa_experimentales/Datasets/DBCA_datos_no_normal.csv",show_col_types = FALSE)
 
 # 3.2. ANOVA
 anova_b <- aov(Rendimiento ~ trt + block, data = datos_b)
@@ -214,14 +205,7 @@ comparaciones_dunn_b
 # -----------------------------
 
 # 4.1. Cargar el Dataset C
-datos_c <- read_csv("DBCA_datos_normal_no_homocedasticidad.csv", show_col_types = FALSE)
-
-# Convertir 'trt' y 'block' a factores
-datos_c <- datos_c %>%
-  mutate(
-    trt = factor(trt, levels = trt_levels),
-    block = factor(block, levels = block_levels)
-  )
+datos_c <- read_csv("Cursos_dictados/Curso_Cedepa_experimentales/Datasets/DBCA_datos_normal_no_homocedasticidad.csv", show_col_types = FALSE)
 
 # 4.2. ANOVA
 anova_c <- aov(Rendimiento ~ trt + block, data = datos_c)
@@ -308,14 +292,7 @@ print(pairs_c)
 # -----------------------------
 
 # 5.1. Cargar el Dataset D
-datos_d <- read_csv("DBCA_datos_no_normal_homocedasticidad.csv", show_col_types = FALSE)
-
-# 5.2. Convertir 'trt' y 'block' a factores con niveles específicos
-datos_d <- datos_d %>%
-  mutate(
-    trt = factor(trt, levels = trt_levels),
-    block = factor(block, levels = block_levels)
-  )
+datos_d <- read_csv("Cursos_dictados/Curso_Cedepa_experimentales/Datasets/DBCA_datos_no_normal_homocedasticidad.csv", show_col_types = FALSE)
 
 # 5.3. ANOVA Estándar (Opcional)
 # Si los tamaños de muestra son equilibrados, ANOVA puede ser robusto frente a la no normalidad
@@ -403,6 +380,50 @@ ggplot(datos_d, aes(x = trt, y = Rendimiento, fill = trt)) +
 # - **Se puede usar ANOVA con correcciones como Welch o Brown-Forsythe.
 # - ***Aunque el ANOVA es posible, las pruebas post-hoc tradicionales no son recomendables. Se pueden usar alternativas como Games-Howell.
 #
+# ========================================================================
+# Cuadro Comparativo de Pruebas de Homogeneidad de Varianzas
+# ========================================================================
+# Característica          | Test de Bartlett                               | Test de Levene
+# ----------------------- | ---------------------------------------------- | -------------------------------
+# Sensibilidad            | Muy sensible a la normalidad                   | Menos sensible a la normalidad
+# Uso Ideal               | Datos normalmente distribuidos                 | Datos no normales o si hay dudas sobre normalidad
+# Ventaja Principal       | Mayor potencia si se cumplen los supuestos     | Mayor robustez ante violaciones de normalidad
+# Desventaja Principal    | Resultados inexactos si no se cumple normalidad| Menor potencia que Bartlett si los datos son normales
+# Tipo de Datos           | Continuos y aproximadamente normales           | Continuos, ordinales, o no normales
+# ========================================================================
+# Código en R para ejecutar los tests:
+# Suponiendo un data frame 'data' con una variable numérica 'response' y un factor 'group':
+
+# Test de Bartlett
+#bartlett.test(response ~ group, data = data)
+
+# Test de Levene (requiere el paquete 'car')
+# install.packages("car")  # Instalar si es necesario
+#library(car)
+#leveneTest(response ~ group, data = data)
+
+# ========================================================================
+# Cuadro Comparativo de Pruebas de Normalidad
+# ========================================================================
+# Característica           | Test de Shapiro-Wilk                          | Test de Anderson-Darling
+# ------------------------ | --------------------------------------------- | ----------------------------------------------
+# **Sensibilidad**         | Muy sensible a pequeñas desviaciones          | Más sensible a las colas de la distribución
+# **Uso Ideal**            | Muestras pequeñas (< 50)                      | Muestras de tamaño moderado a grande (> 50)
+# **Ventaja Principal**    | Mayor potencia para detectar desviaciones     | Mayor sensibilidad a las colas de la distribución
+# **Desventaja Principal** | Puede tener problemas con muestras grandes    | Menos potente para datos que no presentan desviaciones significativas en las colas
+# **Tipo de Datos**        | Datos continuos y aproximadamente normales    | Datos continuos; útil para detectar desviaciones en colas y asimetría
+# ========================================================================
+# Código en R:
+# Para usar el test de Shapiro-Wilk:
+# Supongamos que 'data' es un vector numérico.
+#shapiro.test(data)
+
+# Para usar el test de Anderson-Darling:
+# Necesita la librería 'nortest'
+# install.packages("nortest")
+#library(nortest)
+#ad.test(data)
+
 # -----------------------------
 # Información Teórica Adicional
 # -----------------------------

@@ -66,24 +66,30 @@ set.seed(123)
 
 DBCA_datos_normal <- diseño_dbca$book %>%
   mutate(
-    # Efecto del tratamiento
+    # Efecto base común para todos los tratamientos
+    efecto_base = 50,  
+    
+    # Aumentar significativamente la diferencia entre tratamientos
     efecto_tratamiento = case_when(
-      trt == "Tratamiento_A" ~ 10,
-      trt == "Tratamiento_B" ~ 15,
-      trt == "Tratamiento_C" ~ 20,
-      trt == "Tratamiento_D" ~ 25
+      trt == "Tratamiento_A" ~ 20,   # Cambiar de 15 a 20
+      trt == "Tratamiento_B" ~ 60,   # Cambiar de 35 a 60
+      trt == "Tratamiento_C" ~ 100,  # Cambiar de 55 a 100
+      trt == "Tratamiento_D" ~ 140   # Cambiar de 75 a 140
     ),
-    # Efecto del bloque (asumimos cero para simplificar)
+    
+    # Reducir a cero el efecto de los bloques para evitar su influencia
     efecto_bloque = 0,
-    # Generar el rendimiento con distribución normal y misma varianza
-    Rendimiento = rnorm(n = n(), mean = efecto_tratamiento, sd = 2)
+    
+    # Generar el rendimiento con distribución normal y menor variabilidad dentro de tratamientos
+    Rendimiento = rnorm(n = n(), mean = efecto_base + efecto_tratamiento + efecto_bloque, sd = 2)
   ) %>%
   select(trt, block, Rendimiento)
 
-DBCA_datos_normal
+# Mostrar una vista previa del dataset
+head(DBCA_datos_tratamiento)
 
 # Guardar el dataset en formato CSV
-write_csv(DBCA_datos_normal, "DBCA_datos_normal.csv")
+write.csv(DBCA_datos_normal, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dictados\\Curso_Cedepa_experimentales\\Datasets\\DBCA_datos_normal.csv")
 
 # -----------------------------
 # 2.2. Dataset B: No Normalidad y No Homogeneidad de Varianzas
@@ -92,31 +98,38 @@ write_csv(DBCA_datos_normal, "DBCA_datos_normal.csv")
 # Simular datos con distribución gamma (no normal) y varianzas heterogéneas
 set.seed(456)
 
+# Definir efectos de tratamientos con diferencias significativas
+efecto_tratamiento <- c(Tratamiento_A = 10, 
+                        Tratamiento_B = 30, 
+                        Tratamiento_C = 50, 
+                        Tratamiento_D = 70)
+
+# Asignar diferentes varianzas a cada tratamiento para crear heterogeneidad
+sd_tratamiento <- c(Tratamiento_A = 5, 
+                    Tratamiento_B = 15, 
+                    Tratamiento_C = 25, 
+                    Tratamiento_D = 35)
+
+# Generar datos con errores de distribución gamma (no simétrica)
 DBCA_datos_no_normal <- diseño_dbca$book %>%
   mutate(
-    # Efecto del tratamiento
-    efecto_tratamiento = case_when(
-      trt == "Tratamiento_A" ~ 10,
-      trt == "Tratamiento_B" ~ 15,
-      trt == "Tratamiento_C" ~ 20,
-      trt == "Tratamiento_D" ~ 25
-    ),
-    # Varianza heterogénea por tratamiento
-    sd_tratamiento = case_when(
-      trt == "Tratamiento_A" ~ 1,
-      trt == "Tratamiento_B" ~ 3,
-      trt == "Tratamiento_C" ~ 5,
-      trt == "Tratamiento_D" ~ 7
-    ),
-    # Generar el rendimiento con distribución gamma
-    Rendimiento = rgamma(n = n(), shape = efecto_tratamiento, scale = sd_tratamiento)
+    efecto_tratamiento = efecto_tratamiento[trt],
+    sd_tratamiento = sd_tratamiento[trt],
+    # Generar errores de distribución gamma con asimetría positiva
+    error_term = rgamma(n = n(), shape = 2, scale = sd_tratamiento),
+    # Ajustar los errores para que tengan media cero
+    error_adjusted = error_term - (2 * sd_tratamiento),
+    # Calcular Rendimiento
+    Rendimiento = efecto_tratamiento + error_adjusted
   ) %>%
   select(trt, block, Rendimiento)
 
-DBCA_datos_no_normal
+
+# Visualizar el dataset
+print(DBCA_datos_no_normal)
 
 # Guardar el dataset en formato CSV
-write_csv(DBCA_datos_no_normal, "DBCA_datos_no_normal.csv")
+write_csv(DBCA_datos_no_normal, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dictados\\Curso_Cedepa_experimentales\\Datasets\\DBCA_datos_no_normal.csv")
 
 # -----------------------------
 # 2.3. Dataset C: Normalidad pero Sin Homogeneidad de Varianzas
@@ -127,21 +140,21 @@ set.seed(789)
 
 DBCA_datos_normal_no_homocedasticidad <- diseño_dbca$book %>%
   mutate(
-    # Efecto del tratamiento
+    # Efecto del tratamiento (aumentando las diferencias entre ellos)
     efecto_tratamiento = case_when(
       trt == "Tratamiento_A" ~ 10,
-      trt == "Tratamiento_B" ~ 15,
-      trt == "Tratamiento_C" ~ 20,
-      trt == "Tratamiento_D" ~ 25
+      trt == "Tratamiento_B" ~ 30,  # Aumentar significativamente el efecto
+      trt == "Tratamiento_C" ~ 50,  # Aumentar significativamente el efecto
+      trt == "Tratamiento_D" ~ 70   # Aumentar significativamente el efecto
     ),
-    # Varianza heterogénea por tratamiento
+    # Aumentar considerablemente la diferencia en la varianza
     sd_tratamiento = case_when(
-      trt == "Tratamiento_A" ~ 2,
-      trt == "Tratamiento_B" ~ 4,
-      trt == "Tratamiento_C" ~ 6,
-      trt == "Tratamiento_D" ~ 8
+      trt == "Tratamiento_A" ~ 5,    # Tratamiento con menor varianza
+      trt == "Tratamiento_B" ~ 20,   # Aumentar considerablemente la varianza
+      trt == "Tratamiento_C" ~ 30,   # Incremento mayor en la varianza
+      trt == "Tratamiento_D" ~ 40    # Tratamiento con mayor varianza
     ),
-    # Generar el rendimiento con distribución normal y varianzas diferentes
+    # Generar el rendimiento con distribución normal y varianzas muy diferentes
     Rendimiento = rnorm(n = n(), mean = efecto_tratamiento, sd = sd_tratamiento)
   ) %>%
   select(trt, block, Rendimiento)
@@ -149,7 +162,7 @@ DBCA_datos_normal_no_homocedasticidad <- diseño_dbca$book %>%
 DBCA_datos_normal_no_homocedasticidad
 
 # Guardar el dataset en formato CSV
-write_csv(DBCA_datos_normal_no_homocedasticidad, "DBCA_datos_normal_no_homocedasticidad.csv")
+write_csv(DBCA_datos_normal_no_homocedasticidad, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dictados\\Curso_Cedepa_experimentales\\Datasets\\DBCA_datos_normal_no_homocedasticidad.csv")
 
 # -----------------------------
 # 2.4. Dataset D: No Normalidad pero Sí Homogeneidad de Varianzas
