@@ -1,0 +1,98 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 20px;
+}
+h1, h2, h3, h4 {
+    color: #2C3E50;
+}
+h1 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 25px;
+}
+table, th, td {
+    border: 1px solid #34495E;
+}
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background-color: #34495E;
+    color: #ECF0F1;
+}
+tr:nth-child(even) {
+    background-color: #F2F2F2;
+}
+.note {
+    background-color: #F9E79F;
+    padding: 10px;
+    border-left: 5px solid #F1C40F;
+    margin-bottom: 20px;
+}
+.question {
+    background-color: #D5F5E3;
+    padding: 10px;
+    border-left: 5px solid #28B463;
+    margin-bottom: 20px;
+}
+.formula {
+    background-color: #EBF5FB;
+    padding: 10px;
+    border-left: 5px solid #3498DB;
+    margin-bottom: 20px;
+    font-family: 'Courier New', Courier, monospace;
+}
+.code {
+    background-color: #F4F6F6;
+    padding: 10px;
+    border-left: 5px solid #7F8C8D;
+    margin-bottom: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    overflow-x: auto;
+}
+.important {
+    color: #E74C3C;
+    font-weight: bold;
+}
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    border-bottom: 1px dotted black;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 250px;
+    background-color: #555;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Posición por encima */
+    left: 50%;
+    margin-left: -125px; /* Centrar el tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.tooltip .tooltiptext::after {
+    content: '';
+    position: absolute;
+    top: 100%; /* En la parte inferior del tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
