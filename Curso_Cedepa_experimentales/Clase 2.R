@@ -27,6 +27,11 @@ library(car)
 # Leer los datos desde un archivo CSV separado por punto y coma
 data_papa <- read.csv("potato DCA/PTPVS112016_CANAYPATA_exp1.csv", header = TRUE, sep = ";")
 
+data_papa <- read.delim("clipboard")
+data_papa <- read.table("clipboard", header = TRUE, sep = "\t")
+data_papa <- read.csv("clipboard", header = TRUE)
+
+
 # Ver las primeras filas del conjunto de datos
 head(data_papa)
 
@@ -148,13 +153,41 @@ summary(anova_result)
 # - Si el valor p < 0.05, hay diferencias significativas entre tratamientos.
 # - Si el valor p >= 0.05, no hay diferencias significativas.
 
-# Prueba post-hoc de Tukey si ANOVA es significativa
+# Comparaciones post-hoc: cuándo usar Tukey y Duncan
+# Si el ANOVA es significativo, realizamos comparaciones múltiples
 if(summary(anova_result)[[1]][["Pr(>F)"]][1] < 0.05){
+  # Prueba de Tukey HSD (Honest Significant Difference)
+  # Útil para comparaciones múltiples cuando se cumplen normalidad y homogeneidad de varianzas
+  print("Resultados de la prueba de Tukey HSD:")
   tukey_result <- HSD.test(anova_result, "INSTN", group = TRUE)
   print(tukey_result)
+  
+  # Prueba de Duncan: menos conservadora que Tukey, más probabilidades de encontrar diferencias
+  # Útil en contextos donde se necesita mayor sensibilidad a diferencias
+  print("Resultados de la prueba de Duncan:")
+  duncan_result <- duncan.test(anova_result, "INSTN", group = TRUE)
+  print(duncan_result)
+  
+  # Visualizar las comparaciones
+  plot(tukey_result, main = "Comparación de Medias (Tukey HSD)")
+  plot(duncan_result, main = "Comparación de Medias (Duncan)")
 } else {
   cat("No se encontraron diferencias significativas entre los tratamientos.\n")
 }
+
+tukey_result <- HSD.test(anova_result, "INSTN", group = TRUE)
+
+duncan_result <- duncan.test(anova_result, "INSTN", group = TRUE)
+
+### Cuándo usar Tukey o Duncan:
+## Prueba de Tukey HSD:
+# Útil cuando se necesita controlar el error tipo I (falsos positivos) de forma conservadora.
+# Asume normalidad y homogeneidad de varianzas.
+# Es menos propenso a encontrar diferencias significativas (más conservador).
+## Prueba de Duncan:
+# Es más sensible a detectar diferencias significativas (menos conservador).
+# Puede ser útil si se necesitan detectar pequeñas diferencias entre tratamientos.
+# Utilizado cuando se puede permitir un mayor riesgo de error tipo I.
 
 # -----------------------------
 # 3. Verificación de supuestos
