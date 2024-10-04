@@ -58,17 +58,11 @@ block_levels <- c("Bloque_1", "Bloque_2", "Bloque_3", "Bloque_4")
 # -----------------------------
 
 # 2.1. Cargar el Dataset A
-datos_a <- read_csv("DBCA_datos_normal.csv")
-
-# Convertir 'trt' y 'block' a factores
-datos_a <- datos_a %>%
-  mutate(
-    trt = factor(trt, levels = trt_levels),
-    block = factor(block, levels = block_levels)
-  )
+datos_a <- read_csv("Cursos_dictados/Curso_Cedepa_experimentales/Datasets/DBCA_datos_normal.csv")
 
 # 2.2. ANOVA
 anova_a <- aov(Rendimiento ~ trt + block, data = datos_a)
+
 summary(anova_a)
 
 # Coeficiente de varianza (CV)
@@ -77,9 +71,11 @@ cv.model(anova_a)
 # 2.3. Verificación de Supuestos
 
 # Prueba de Normalidad (Shapiro-Wilk)
-residuos_a <- residuals(anova_a)
-shapiro_a <- shapiro.test(residuos_a)
-print("Prueba de Shapiro-Wilk para normalidad (Dataset A):")
+
+shapiro_a <- shapiro.test(anova_a$residuals)
+
+summary(shapiro_a)
+
 print(shapiro_a)
 
 # GRaficos de Normalidad (Q-Q plots)
@@ -88,7 +84,8 @@ qqline(residuals(anova_a), col = "red")
 
 # Prueba de Homogeneidad de Varianzas (Levene)
 levene_a <- leveneTest(Rendimiento ~ trt, data = datos_a)
-print("Prueba de Levene para homogeneidad de varianzas (Dataset A):")
+barlet <- bartlett.test(Rendimiento ~ trt, data = datos_a)
+
 print(levene_a)
 
 # Crear un boxplot de Rendimiento por Tratamiento
@@ -98,7 +95,13 @@ ggplot(datos_a, aes(x = trt, y = Rendimiento, fill = trt)) +
   labs(title = "Boxplot de Rendimiento por Tratamiento",
        x = "Tratamiento",
        y = "Rendimiento") +
-  theme(legend.position = "none")
+  theme(
+    plot.title = element_text(family = "mono", size = 20, color = "red", face = "bold"),
+    plot.title.x = element_text(family = "mono")
+    )
+
+ggplot(datos_a, aes(x = trt, y = Rendimiento, fill = trt)) + 
+  
 
 # Interpretación:
 # - Si p > 0.05 en ambas pruebas, los supuestos se cumplen y podemos proceder con confianza.
