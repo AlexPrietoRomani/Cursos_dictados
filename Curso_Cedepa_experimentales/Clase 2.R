@@ -29,6 +29,7 @@ data_papa <- read.csv("potato DCA/PTPVS112016_CANAYPATA_exp1.csv", header = TRUE
 
 data_papa <- read.delim("clipboard")
 data_papa <- read.table("clipboard", header = TRUE, sep = "\t")
+
 data_papa <- read.csv("clipboard", header = TRUE)
 
 
@@ -42,8 +43,12 @@ str(data_papa)
 datos_seleccionados <- data_papa %>%
   select(NTP, NPH, NMTPL, MTWPL, ATW)
 
+datos_seleccionados <- select(data_papa, NTP, NPH, NMTPL, MTWPL, ATW)
+
 # Ver las primeras filas de los datos seleccionados
 head(datos_seleccionados)
+
+summary(datos_seleccionados)
 
 # -----------------------------
 # 1. Estadística Descriptiva en R
@@ -76,6 +81,7 @@ print(medidas_descriptivas)
 datos_visual <- data_papa %>%
   select(INSTN, NTP, NPH, NMTPL, MTWPL, ATW)
 
+
 # Histograma de ATW
 hist_ATW <- ggplot(datos_visual, aes(x = ATW)) +
   geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
@@ -99,13 +105,14 @@ hist_NPH <- ggplot(datos_visual, aes(x = NPH)) +
   theme_minimal() +
   labs(title = "Histograma del Número de Plantas Cosechadas (NPH)",
        x = "Número de Plantas Cosechadas",
-       y = "Frecuencia")
+       y = "Frecuencia") +
+  theme(text = element_text(family = "Arial", face = "bold"))
 print(hist_NPH)
 
 # Boxplot de NPH
 box_NPH <- ggplot(datos_visual, aes(y = NPH, x = INSTN)) +
-  geom_boxplot(fill = "lightblue", color = "darkblue") +
-  theme_minimal() +
+  geom_boxplot(fill = "red", color = "black") +
+  #theme_minimal() +
   labs(title = "Boxplot del Número de Plantas Cosechadas (NPH)",
        y = "Número de Plantas Cosechadas")
 print(box_NPH)
@@ -147,7 +154,13 @@ anova_data <- data_papa %>%
 
 # Realizar ANOVA
 anova_result <- aov(MTWPL ~ INSTN, data = anova_data)
+
+aov(MTWPL ~ INSTN, data = anova_data)
+
 summary(anova_result)
+
+
+cv.model(anova_result)
 
 # Interpretación:
 # - Si el valor p < 0.05, hay diferencias significativas entre tratamientos.
@@ -175,9 +188,16 @@ if(summary(anova_result)[[1]][["Pr(>F)"]][1] < 0.05){
   cat("No se encontraron diferencias significativas entre los tratamientos.\n")
 }
 
-tukey_result <- HSD.test(anova_result, "INSTN", group = TRUE)
 
-duncan_result <- duncan.test(anova_result, "INSTN", group = TRUE)
+# 
+tukey_result <- HSD.test(anova_result, "INSTN", group = TRUE, console = TRUE)
+
+bar.group(tukey_result$groups, main ="Prueba Tuckey",xlab="GRafico",ylab="Residuos", ylim = c(0,1.3),col="#ff5733" ,angle=45)
+
+# 
+duncan_result <- duncan.test(anova_result, "INSTN", group = TRUE, console = TRUE)
+
+bar.group(duncan_result$groups)
 
 ### Cuándo usar Tukey o Duncan:
 ## Prueba de Tukey HSD:
@@ -197,6 +217,7 @@ duncan_result <- duncan.test(anova_result, "INSTN", group = TRUE)
 
 # Prueba de Shapiro-Wilk para normalidad de los residuales
 shapiro_result <- shapiro.test(anova_result$residuals)
+
 print(shapiro_result)
 
 # Interpretación:
@@ -204,13 +225,14 @@ print(shapiro_result)
 # - Si p >= 0.05, no hay evidencia de no normalidad.
 
 # Gráfico Q-Q de los residuales con ggplot
-qq_plot <- ggplot(data = data.frame(residuals = anova_result$residuals), aes(sample = residuals)) +
+ggplot(data = data.frame(residuals = anova_result$residuals), aes(sample = residuals)) +
   stat_qq() +
   stat_qq_line(color = "red") +
-  theme_minimal() +
   labs(title = "Gráfico Q-Q de los Residuales del ANOVA",
        x = "Cuantiles Teóricos",
        y = "Cuantiles Muestrales")
+  
+
 print(qq_plot)
 
 # Gráfico Q-Q de los residuales con ggplot
@@ -221,11 +243,13 @@ qqline(residuals(anova_result), col = "red")
 
 # Prueba de Levene para homogeneidad de varianzas
 levene_result <- leveneTest(MTWPL ~ INSTN, data = anova_data)
+
 print(levene_result)
 
 # Interpretación:
 # - Si p < 0.05, las varianzas no son homogéneas.
 # - Si p >= 0.05, no hay evidencia de heterogeneidad de varianzas.
+
 
 # -----------------------------
 # 4. Análisis de datos cualitativos
