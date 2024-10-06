@@ -96,3 +96,29 @@ tr:nth-child(even) {
     visibility: visible;
     opacity: 1;
 }
+.code {
+    position: relative;
+    background-color: #f4f4f4;
+    border-left: 5px solid #ccc;
+    margin: 1em 0;
+    padding: 1em;
+    overflow: auto;
+}
+.copy-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border: none;
+    background-color: #008CBA;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 3px;
+}
+.copy-button:hover {
+    background-color: #006F98;
+}
+pre {
+    margin: 0;
+}

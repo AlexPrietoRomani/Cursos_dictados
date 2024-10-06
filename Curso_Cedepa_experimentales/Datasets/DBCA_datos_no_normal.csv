@@ -1,17 +1,81 @@
-trt,block,Rendimiento
-Tratamiento_D,Bloque_1,186.13452047930826
-Tratamiento_A,Bloque_1,21.702292318720367
-Tratamiento_C,Bloque_1,84.58757571783867
-Tratamiento_B,Bloque_1,11.759987688253801
-Tratamiento_A,Bloque_2,11.081719767217479
-Tratamiento_D,Bloque_2,22.46725081886032
-Tratamiento_C,Bloque_2,70.22570227602456
-Tratamiento_B,Bloque_2,73.25439761102496
-Tratamiento_C,Bloque_3,18.816195384708237
-Tratamiento_D,Bloque_3,106.30137750491595
-Tratamiento_B,Bloque_3,35.554203130963806
-Tratamiento_A,Bloque_3,16.90421460730734
-Tratamiento_B,Bloque_4,9.662460463597078
-Tratamiento_D,Bloque_4,51.39125813101505
-Tratamiento_A,Bloque_4,13.846720429491961
-Tratamiento_C,Bloque_4,51.52475951703232
+plots,block,trt,Rendimiento
+1,Bloque 1,Tratamiento_A,50.37413929326308
+2,Bloque 1,Tratamiento_A,53.99205891591394
+3,Bloque 1,Tratamiento_A,54.59873988728442
+4,Bloque 1,Tratamiento_A,52.254915387829335
+5,Bloque 1,Tratamiento_A,52.16222793431822
+6,Bloque 1,Tratamiento_B,9.83932401195717
+7,Bloque 1,Tratamiento_B,0.16799954861936095
+8,Bloque 1,Tratamiento_B,7.8753536826874235
+9,Bloque 1,Tratamiento_B,0.9538328681956205
+10,Bloque 1,Tratamiento_B,4.4710567465757896
+11,Bloque 1,Tratamiento_C,29.84925080004048
+12,Bloque 1,Tratamiento_C,12.018591293616302
+13,Bloque 1,Tratamiento_C,13.31894511444014
+14,Bloque 1,Tratamiento_C,9.603624677263525
+15,Bloque 1,Tratamiento_C,7.627006321359215
+16,Bloque 1,Tratamiento_D,50.895134413477926
+17,Bloque 1,Tratamiento_D,47.13956179154674
+18,Bloque 1,Tratamiento_D,49.486500995091795
+19,Bloque 1,Tratamiento_D,52.095132565259874
+20,Bloque 1,Tratamiento_D,150
+21,Bloque 2,Tratamiento_A,51.13833266977969
+22,Bloque 2,Tratamiento_A,48.18579046797878
+23,Bloque 2,Tratamiento_A,50.05979779385013
+24,Bloque 2,Tratamiento_A,46.88194348436142
+25,Bloque 2,Tratamiento_A,50.59497367617185
+26,Bloque 2,Tratamiento_B,0.489540809180945
+27,Bloque 2,Tratamiento_B,1.5797985989087704
+28,Bloque 2,Tratamiento_B,7.412780607975327
+29,Bloque 2,Tratamiento_B,5.179126711052666
+30,Bloque 2,Tratamiento_B,1.0136323758987078
+31,Bloque 2,Tratamiento_C,14.501078768639138
+32,Bloque 2,Tratamiento_C,3.7567999916379917
+33,Bloque 2,Tratamiento_C,43.97885101614456
+34,Bloque 2,Tratamiento_C,67.19937526060325
+35,Bloque 2,Tratamiento_C,4.808528771699157
+36,Bloque 2,Tratamiento_D,46.17222433548988
+37,Bloque 2,Tratamiento_D,51.05464030443949
+38,Bloque 2,Tratamiento_D,50.72723562913607
+39,Bloque 2,Tratamiento_D,52.67911641007492
+40,Bloque 2,Tratamiento_D,150
+41,Bloque 3,Tratamiento_A,46.78238136328477
+42,Bloque 3,Tratamiento_A,50.055006299664434
+43,Bloque 3,Tratamiento_A,47.503568135325914
+44,Bloque 3,Tratamiento_A,50.900643986447996
+45,Bloque 3,Tratamiento_A,50.98548537368172
+46,Bloque 3,Tratamiento_B,0.7286763487037506
+47,Bloque 3,Tratamiento_B,0.1300301102126126
+48,Bloque 3,Tratamiento_B,0.2684996348419885
+49,Bloque 3,Tratamiento_B,0.6468963007551831
+50,Bloque 3,Tratamiento_B,1.9870199814874245
+51,Bloque 3,Tratamiento_C,45.881276260648185
+52,Bloque 3,Tratamiento_C,10.957024477244408
+53,Bloque 3,Tratamiento_C,15.476642744520564
+54,Bloque 3,Tratamiento_C,31.26761382278836
+55,Bloque 3,Tratamiento_C,11.016192752547054
+56,Bloque 3,Tratamiento_D,45.8550887502032
+57,Bloque 3,Tratamiento_D,50.03384704233007
+58,Bloque 3,Tratamiento_D,52.94468266261424
+59,Bloque 3,Tratamiento_D,51.970967731219
+60,Bloque 3,Tratamiento_D,150
+61,Bloque 4,Tratamiento_A,51.09822255192135
+62,Bloque 4,Tratamiento_A,52.88370929701149
+63,Bloque 4,Tratamiento_A,50.72622451133143
+64,Bloque 4,Tratamiento_A,49.5302734262342
+65,Bloque 4,Tratamiento_A,51.32025686513167
+66,Bloque 4,Tratamiento_B,0.7697608699379705
+67,Bloque 4,Tratamiento_B,0.5836412998809559
+68,Bloque 4,Tratamiento_B,1.0371964076273203
+69,Bloque 4,Tratamiento_B,0.4189307441513346
+70,Bloque 4,Tratamiento_B,0.8351690242614507
+71,Bloque 4,Tratamiento_C,42.92511104756901
+72,Bloque 4,Tratamiento_C,6.573728779114044
+73,Bloque 4,Tratamiento_C,14.908924708651227
+74,Bloque 4,Tratamiento_C,43.7356635182435
+75,Bloque 4,Tratamiento_C,68.95995471918934
+76,Bloque 4,Tratamiento_D,46.622950726085925
+77,Bloque 4,Tratamiento_D,49.96275560400539
+78,Bloque 4,Tratamiento_D,49.25116912316544
+79,Bloque 4,Tratamiento_D,51.16714614383979
+80,Bloque 4,Tratamiento_D,150

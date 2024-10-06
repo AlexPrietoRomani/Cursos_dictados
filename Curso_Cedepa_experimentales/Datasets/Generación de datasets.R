@@ -95,38 +95,84 @@ write.csv(DBCA_datos_normal, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dic
 # 2.2. Dataset B: No Normalidad y No Homogeneidad de Varianzas
 # -----------------------------
 
-# Simular datos con distribución gamma (no normal) y varianzas heterogéneas
-set.seed(456)
+# Establecer semilla para reproducibilidad
+set.seed(123)
 
-# Definir efectos de tratamientos con diferencias significativas
-efecto_tratamiento <- c(Tratamiento_A = 10, 
-                        Tratamiento_B = 30, 
-                        Tratamiento_C = 50, 
-                        Tratamiento_D = 70)
+# Crear el diseño DBCA básico con 4 bloques y 4 tratamientos, 5 parcelas por tratamiento por bloque (total 80)
+n_blocks <- 4
+n_trts <- 4
+n_reps <- 5  # Parcelas por tratamiento por bloque
 
-# Asignar diferentes varianzas a cada tratamiento para crear heterogeneidad
-sd_tratamiento <- c(Tratamiento_A = 5, 
-                    Tratamiento_B = 15, 
-                    Tratamiento_C = 25, 
-                    Tratamiento_D = 35)
+# Crear el dataframe diseño_dbca$book
+DBCA_datos_no_normal <- data.frame(
+  plots = 1:(n_blocks * n_trts * n_reps),
+  block = rep(paste("Bloque", 1:n_blocks), each = n_trts * n_reps),
+  trt = rep(rep(c("Tratamiento_A", "Tratamiento_B", "Tratamiento_C", "Tratamiento_D"), each = n_reps), times = n_blocks)
+)
 
-# Generar datos con errores de distribución gamma (no simétrica)
-DBCA_datos_no_normal <- diseño_dbca$book %>%
-  mutate(
-    efecto_tratamiento = efecto_tratamiento[trt],
-    sd_tratamiento = sd_tratamiento[trt],
-    # Generar errores de distribución gamma con asimetría positiva
-    error_term = rgamma(n = n(), shape = 2, scale = sd_tratamiento),
-    # Ajustar los errores para que tengan media cero
-    error_adjusted = error_term - (2 * sd_tratamiento),
-    # Calcular Rendimiento
-    Rendimiento = efecto_tratamiento + error_adjusted
-  ) %>%
-  select(trt, block, Rendimiento)
+# Asignar los rendimientos manualmente para garantizar las características deseadas
+DBCA_datos_no_normal$Rendimiento <- NA
 
+# **Asignación de Rendimientos para Cada Tratamiento**
 
-# Visualizar el dataset
-print(DBCA_datos_no_normal)
+# Tratamiento_A: Distribución normal con varianza baja (sd = 2)
+DBCA_datos_no_normal$Rendimiento[DBCA_datos_no_normal$trt == 'Tratamiento_A'] <- rnorm(n_reps * n_blocks, mean = 50, sd = 2)
+
+# Tratamiento_B: Distribución exponencial (sesgada a la derecha) con varianza alta (rate = 1/5, varianza = 25)
+DBCA_datos_no_normal$Rendimiento[DBCA_datos_no_normal$trt == 'Tratamiento_B'] <- rexp(n_reps * n_blocks, rate = 1/5)
+
+# Tratamiento_C: Distribución log-normal (altamente sesgada) con varianza muy alta
+DBCA_datos_no_normal$Rendimiento[DBCA_datos_no_normal$trt == 'Tratamiento_C'] <- rlnorm(n_reps * n_blocks, meanlog = 3, sdlog = 1)
+
+# Tratamiento_D: Distribución normal con outliers extremos para aumentar la varianza
+# Generar 4 valores normales y 1 outlier por bloque
+for (b in 1:n_blocks) {
+  indices <- which(DBCA_datos_no_normal$block == paste("Bloque", b) & DBCA_datos_no_normal$trt == 'Tratamiento_D')
+  DBCA_datos_no_normal$Rendimiento[indices[1:4]] <- rnorm(4, mean = 50, sd = 2)
+  DBCA_datos_no_normal$Rendimiento[indices[5]] <- 150  # Outlier extremo
+}
+
+# Visualizar las primeras filas del dataset
+print("Primeras filas del dataset:")
+print(head(DBCA_datos_no_normal))
+
+# **Verificación de los Supuestos**
+
+# Ajustar el modelo ANOVA
+anova_model <- aov(Rendimiento ~ trt + block, data = DBCA_datos_no_normal)
+
+# Obtener los residuos del modelo
+residuos <- residuals(anova_model)
+
+# **Prueba de Shapiro-Wilk para Normalidad**
+shapiro_b <- shapiro.test(residuos)
+print("Prueba de Shapiro-Wilk para normalidad (Dataset B):")
+print(shapiro_b)
+
+# **Prueba de Levene para Homogeneidad de Varianzas**
+levene_b <- leveneTest(Rendimiento ~ trt, data = DBCA_datos_no_normal)
+print("Prueba de Levene para homogeneidad de varianzas (Dataset B):")
+print(levene_b)
+
+# **Varianzas por Tratamiento**
+variances <- tapply(DBCA_datos_no_normal$Rendimiento, DBCA_datos_no_normal$trt, var)
+print("Varianzas por tratamiento:")
+print(variances)
+
+# **Visualizaciones Gráficas**
+
+# Histograma de los rendimientos
+hist(DBCA_datos_no_normal$Rendimiento, main = "Histograma de Rendimientos (Dataset B)", 
+     xlab = "Rendimiento", col = "lightgreen")
+
+# Gráfico Q-Q de los residuos
+qqnorm(residuos, main = "Q-Q Plot de Residuales (Dataset B)")
+qqline(residuos, col = "red")
+
+# Boxplot por tratamiento
+boxplot(Rendimiento ~ trt, data = DBCA_datos_no_normal, 
+        main = "Boxplot de Rendimiento por Tratamiento (Dataset B)",
+        xlab = "Tratamiento", ylab = "Rendimiento")
 
 # Guardar el dataset en formato CSV
 write_csv(DBCA_datos_no_normal, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dictados\\Curso_Cedepa_experimentales\\Datasets\\DBCA_datos_no_normal.csv")
@@ -168,26 +214,62 @@ write_csv(DBCA_datos_normal_no_homocedasticidad, "C:\\Users\\alexa\\OneDrive\\Do
 # 2.4. Dataset D: No Normalidad pero Sí Homogeneidad de Varianzas
 # -----------------------------
 
-# Simular datos con distribución exponencial (no normal) pero varianzas homogéneas
-set.seed(101112)
+# Cargar el paquete necesario
+library(car)  # Para la prueba de Levene
 
-DBCA_datos_no_normal_homocedasticidad <- diseño_dbca$book %>%
-  mutate(
-    # Efecto del tratamiento
-    efecto_tratamiento = case_when(
-      trt == "Tratamiento_A" ~ 10,
-      trt == "Tratamiento_B" ~ 15,
-      trt == "Tratamiento_C" ~ 20,
-      trt == "Tratamiento_D" ~ 25
-    ),
-    # Varianza homogénea (misma desviación estándar)
-    sd_tratamiento = 5,
-    # Generar el rendimiento con distribución exponencial
-    Rendimiento = rexp(n = n(), rate = 1/sd_tratamiento) + efecto_tratamiento
-  ) %>%
-  select(trt, block, Rendimiento)
+# Establecer semilla para reproducibilidad
+set.seed(123)
 
-DBCA_datos_no_normal_homocedasticidad
+# Crear el diseño DBCA básico con 4 bloques y 4 tratamientos
+diseño_dbca <- list()
+diseño_dbca$book <- data.frame(
+  plots = 1:16,
+  block = rep(paste("Bloque", 1:4), each = 4),
+  trt = rep(c("Tratamiento_A", "Tratamiento_B", "Tratamiento_C", "Tratamiento_D"), times = 4)
+)
+
+# Crear el dataframe DBCA_datos_no_normal_homocedasticidad a partir de diseño_dbca$book
+DBCA_datos_no_normal_homocedasticidad <- diseño_dbca$book
+
+# Asignar los rendimientos manualmente para garantizar las características deseadas
+DBCA_datos_no_normal_homocedasticidad$Rendimiento <- NA
+
+# **Asignación de Rendimientos para Cada Tratamiento**
+
+# Tratamiento_A: Distribución uniforme
+DBCA_datos_no_normal_homocedasticidad$Rendimiento[DBCA_datos_no_normal_homocedasticidad$trt == 'Tratamiento_A'] <- runif(4, min=40, max=60)
+
+# Tratamiento_B: Distribución uniforme
+DBCA_datos_no_normal_homocedasticidad$Rendimiento[DBCA_datos_no_normal_homocedasticidad$trt == 'Tratamiento_B'] <- runif(4, min=40, max=60)
+
+# Tratamiento_C: Distribución uniforme
+DBCA_datos_no_normal_homocedasticidad$Rendimiento[DBCA_datos_no_normal_homocedasticidad$trt == 'Tratamiento_C'] <- runif(4, min=40, max=60)
+
+# Tratamiento_D: Distribución uniforme
+DBCA_datos_no_normal_homocedasticidad$Rendimiento[DBCA_datos_no_normal_homocedasticidad$trt == 'Tratamiento_D'] <- runif(4, min=40, max=60)
+
+# **Verificación de los Supuestos**
+
+# Ajustar el modelo ANOVA
+anova_model <- aov(Rendimiento ~ trt + block, data = DBCA_datos_no_normal_homocedasticidad)
+
+# Obtener los residuos del modelo
+residuos <- residuals(anova_model)
+
+# **Prueba de Shapiro-Wilk para Normalidad**
+shapiro_b <- shapiro.test(residuos)
+print("Prueba de Shapiro-Wilk para normalidad (Dataset B):")
+print(shapiro_b)
+
+# **Prueba de Levene para Homogeneidad de Varianzas**
+levene_b <- leveneTest(Rendimiento ~ trt, data = DBCA_datos_no_normal_homocedasticidad)
+print("Prueba de Levene para homogeneidad de varianzas (Dataset B):")
+print(levene_b)
+
+# **Varianzas por Tratamiento**
+variances <- tapply(DBCA_datos_no_normal_homocedasticidad$Rendimiento, DBCA_datos_no_normal_homocedasticidad$trt, var)
+print("Varianzas por tratamiento:")
+print(variances)
 
 # Guardar el dataset en formato CSV
-write_csv(DBCA_datos_no_normal_homocedasticidad, "DBCA_datos_no_normal_homocedasticidad.csv")
+write_csv(DBCA_datos_no_normal_homocedasticidad, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dictados\\Curso_Cedepa_experimentales\\Datasets\\DBCA_datos_no_normal_homocedasticidad.csv")

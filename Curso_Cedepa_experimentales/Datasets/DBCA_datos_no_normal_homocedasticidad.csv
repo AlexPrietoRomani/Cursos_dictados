@@ -1,17 +1,17 @@
-trt,block,Rendimiento
-Tratamiento_D,Bloque_1,26.939584493390186
-Tratamiento_A,Bloque_1,21.80335618306131
-Tratamiento_C,Bloque_1,34.381363134994835
-Tratamiento_B,Bloque_1,28.911666501458786
-Tratamiento_A,Bloque_2,10.304341927951837
-Tratamiento_D,Bloque_2,32.72454655822106
-Tratamiento_C,Bloque_2,21.3716151789696
-Tratamiento_B,Bloque_2,28.49689719392761
-Tratamiento_C,Bloque_3,29.56346553794022
-Tratamiento_D,Bloque_3,28.98020727667313
-Tratamiento_B,Bloque_3,15.911615609962903
-Tratamiento_A,Bloque_3,13.686248985901564
-Tratamiento_B,Bloque_4,20.58496415294173
-Tratamiento_D,Bloque_4,27.398906500870105
-Tratamiento_A,Bloque_4,13.131998553437178
-Tratamiento_C,Bloque_4,23.961583389639245
+plots,block,trt,Rendimiento
+1,Bloque 1,Tratamiento_A,51.48393973044211
+2,Bloque 1,Tratamiento_B,59.78516067373221
+3,Bloque 1,Tratamiento_C,57.20353576755233
+4,Bloque 1,Tratamiento_D,43.64351400724694
+5,Bloque 2,Tratamiento_A,59.724280931922664
+6,Bloque 2,Tratamiento_B,42.26674654108164
+7,Bloque 2,Tratamiento_C,47.04688879825335
+8,Bloque 2,Tratamiento_D,48.306915561740034
+9,Bloque 3,Tratamiento_A,59.54069283314531
+10,Bloque 3,Tratamiento_B,57.404509819439724
+11,Bloque 3,Tratamiento_C,54.307567382768624
+12,Bloque 3,Tratamiento_D,50.23852312710102
+13,Bloque 4,Tratamiento_A,55.93955257347309
+14,Bloque 4,Tratamiento_B,45.166510535675684
+15,Bloque 4,Tratamiento_C,43.4502846709104
+16,Bloque 4,Tratamiento_D,54.4848874058772

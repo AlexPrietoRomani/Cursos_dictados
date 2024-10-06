@@ -97,8 +97,6 @@ ggplot(datos_a, aes(x = trt, y = Rendimiento, fill = trt)) +
     plot.title = element_text(family = "mono", size = 20, color = "red", face = "bold"),
     plot.title.x = element_text(family = "mono")
     )
-
-ggplot(datos_a, aes(x = trt, y = Rendimiento, fill = trt)) + 
   
 
 # Interpretación:
@@ -191,11 +189,9 @@ print("Prueba de Kruskal-Wallis (Dataset B):")
 print(kruskal_b)
 
 # 3.4.3. Realizar Comparaciones Múltiples No Paramétricas (Prueba de Dunn)
-comparaciones_dunn_b <- datos_b %>%
-  dunn_test(Rendimiento ~ trt, p.adjust.method = "bonferroni") %>%
-  add_significance()
-
-comparaciones_dunn_b
+dunn_result <- dunnTest(Rendimiento ~ trt, data = datos_b, method = "bonferroni")
+print("Prueba de Dunn (Dataset B):")
+print(dunn_result)
 
 # Nota: En casos donde los supuestos no se cumplen y las transformaciones no ayudan,
 # se recomienda utilizar métodos no paramétricos.
@@ -364,65 +360,6 @@ ggplot(datos_d, aes(x = trt, y = Rendimiento, fill = trt)) +
        y = "Rendimiento") +
   theme(legend.position = "none")
 
-# -----------------------------
-# 6. Conclusiones y Recomendaciones
-# -----------------------------
-#
-# | Dataset | Normalidad | Homogeneidad de Varianzas | ANOVA Posible | Pruebas Post-hoc       | 
-# |---------|------------|--------------------------|---------------|-------------------------|
-# | A       | Sí         | Sí                       | Sí            | Sí (Tukey, Duncan)      |
-# | B       | No         | No                       | No*           | No                      |
-# | C       | Sí         | No                       | Sí**          | No***                   |
-# | D       | No         | Sí                       | No*           | No                      |
-#
-# Leyenda de Notas Adicionales:
-# - *En estos casos, se recomienda usar pruebas no paramétricas como Kruskal-Wallis.
-# - **Se puede usar ANOVA con correcciones como Welch o Brown-Forsythe.
-# - ***Aunque el ANOVA es posible, las pruebas post-hoc tradicionales no son recomendables. Se pueden usar alternativas como Games-Howell.
-#
-# ========================================================================
-# Cuadro Comparativo de Pruebas de Homogeneidad de Varianzas
-# ========================================================================
-# Característica          | Test de Bartlett                               | Test de Levene
-# ----------------------- | ---------------------------------------------- | -------------------------------
-# Sensibilidad            | Muy sensible a la normalidad                   | Menos sensible a la normalidad
-# Uso Ideal               | Datos normalmente distribuidos                 | Datos no normales o si hay dudas sobre normalidad
-# Ventaja Principal       | Mayor potencia si se cumplen los supuestos     | Mayor robustez ante violaciones de normalidad
-# Desventaja Principal    | Resultados inexactos si no se cumple normalidad| Menor potencia que Bartlett si los datos son normales
-# Tipo de Datos           | Continuos y aproximadamente normales           | Continuos, ordinales, o no normales
-# ========================================================================
-# Código en R para ejecutar los tests:
-# Suponiendo un data frame 'data' con una variable numérica 'response' y un factor 'group':
-
-# Test de Bartlett
-#bartlett.test(response ~ group, data = data)
-
-# Test de Levene (requiere el paquete 'car')
-# install.packages("car")  # Instalar si es necesario
-#library(car)
-#leveneTest(response ~ group, data = data)
-
-# ========================================================================
-# Cuadro Comparativo de Pruebas de Normalidad
-# ========================================================================
-# Característica           | Test de Shapiro-Wilk                          | Test de Anderson-Darling
-# ------------------------ | --------------------------------------------- | ----------------------------------------------
-# **Sensibilidad**         | Muy sensible a pequeñas desviaciones          | Más sensible a las colas de la distribución
-# **Uso Ideal**            | Muestras pequeñas (< 50)                      | Muestras de tamaño moderado a grande (> 50)
-# **Ventaja Principal**    | Mayor potencia para detectar desviaciones     | Mayor sensibilidad a las colas de la distribución
-# **Desventaja Principal** | Puede tener problemas con muestras grandes    | Menos potente para datos que no presentan desviaciones significativas en las colas
-# **Tipo de Datos**        | Datos continuos y aproximadamente normales    | Datos continuos; útil para detectar desviaciones en colas y asimetría
-# ========================================================================
-# Código en R:
-# Para usar el test de Shapiro-Wilk:
-# Supongamos que 'data' es un vector numérico.
-#shapiro.test(data)
-
-# Para usar el test de Anderson-Darling:
-# Necesita la librería 'nortest'
-# install.packages("nortest")
-#library(nortest)
-#ad.test(data)
 
 # -----------------------------
 # Información Teórica Adicional
