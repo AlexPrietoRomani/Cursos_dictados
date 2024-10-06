@@ -60,6 +60,12 @@ block_levels <- c("Bloque_1", "Bloque_2", "Bloque_3", "Bloque_4")
 # 2.1. Cargar el Dataset A
 datos_a <- read_csv("Cursos_dictados/Curso_Cedepa_experimentales/Datasets/DBCA_datos_normal.csv")
 
+head(datos_a)
+
+str(datos_a)
+
+summary(datos_a)
+
 # 2.2. ANOVA
 anova_a <- aov(Rendimiento ~ trt + block, data = datos_a)
 
@@ -97,7 +103,7 @@ ggplot(datos_a, aes(x = trt, y = Rendimiento, fill = trt)) +
     plot.title = element_text(family = "mono", size = 20, color = "red", face = "bold"),
     plot.title.x = element_text(family = "mono")
     )
-  
+
 
 # Interpretación:
 # - Si p > 0.05 en ambas pruebas, los supuestos se cumplen y podemos proceder con confianza.
@@ -112,7 +118,7 @@ bar.group(tukey_a$groups, horiz = FALSE,
           col = terrain.colors(length(unique(datos_a$trt))),
           main = "Rendimiento Promedio por Tratamiento (Dataset A)",
           ylab = "Rendimiento Promedio",
-          xlab = "Tratamiento", ylim = c(0, 30), las = 1)
+          xlab = "Tratamiento", ylim = c(0, 250), las = 1)
 
 # -----------------------------
 # 3. Análisis del Dataset B: Sin Normalidad y Sin Homogeneidad de Varianzas
@@ -120,6 +126,12 @@ bar.group(tukey_a$groups, horiz = FALSE,
 
 # 3.1. Cargar el Dataset B
 datos_b <- read_csv("Cursos_dictados/Curso_Cedepa_experimentales/Datasets/DBCA_datos_no_normal.csv",show_col_types = FALSE)
+
+head(datos_b)
+
+str(datos_b)
+
+summary(datos_b)
 
 # 3.2. ANOVA
 anova_b <- aov(Rendimiento ~ trt + block, data = datos_b)
@@ -135,6 +147,9 @@ residuos_b <- residuals(anova_b)
 shapiro_b <- shapiro.test(residuos_b)
 print("Prueba de Shapiro-Wilk para normalidad (Dataset B):")
 print(shapiro_b)
+
+ggplot(datos_b, aes(x = Rendimiento)) +
+  geom_histogram()
 
 # GRaficos de Normalidad (Q-Q plots)
 qqnorm(residuos_b, main = "Q-Q Plot de Residuales (Dataset B)")
@@ -163,6 +178,9 @@ ggplot(datos_b, aes(x = trt, y = Rendimiento, fill = trt)) +
 # Intentamos una transformación logarítmica
 datos_b <- datos_b %>%
   mutate(Rendimiento_log = log(Rendimiento))
+
+ggplot(aes(x = Rendimiento), data = datos_b) +
+  geom_histogram()
 
 # ANOVA con datos transformados
 anova_b_trans <- aov(Rendimiento_log ~ trt + block, data = datos_b)
@@ -203,6 +221,12 @@ print(dunn_result)
 # 4.1. Cargar el Dataset C
 datos_c <- read_csv("Cursos_dictados/Curso_Cedepa_experimentales/Datasets/DBCA_datos_normal_no_homocedasticidad.csv", show_col_types = FALSE)
 
+head(datos_c)
+
+str(datos_c)
+
+summary(datos_c)
+
 # 4.2. ANOVA
 anova_c <- aov(Rendimiento ~ trt + block, data = datos_c)
 summary(anova_c)
@@ -217,6 +241,9 @@ residuos_c <- residuals(anova_c)
 shapiro_c <- shapiro.test(residuos_c)
 print("Prueba de Shapiro-Wilk para normalidad (Dataset C):")
 print(shapiro_c)
+
+ggplot(aes(x = Rendimiento), data = datos_c) +
+  geom_histogram()
 
 # Gráfico Q-Q de los residuales
 qqnorm(residuos_c, main = "Q-Q Plot de Residuales (Dataset C)")
@@ -263,6 +290,11 @@ print(shapiro_c_trans)
 print("Prueba de Levene para homogeneidad de varianzas (Datos Transformados, Dataset C):")
 print(levene_c_trans)
 
+# 3.4.2. Prueba No Paramétrica (Kruskal-Wallis)
+kruskal_b <- kruskal.test(Rendimiento ~ trt, data = datos_c)
+print("Prueba de Kruskal-Wallis (Dataset C):")
+print(kruskal_b)
+
 # Si después de la transformación la homogeneidad se cumple (p > 0.05), podemos proceder.
 
 # 4.4.2. Usar Modelos que Permitan Varianzas Heterogéneas
@@ -270,6 +302,7 @@ print(levene_c_trans)
 
 modelo_c <- gls(Rendimiento ~ trt + block, data = datos_c,
                 weights = varIdent(form = ~ 1 | trt))
+
 summary(modelo_c)
 
 # 4.4.3. Comparaciones Múltiples con emmeans
@@ -298,7 +331,6 @@ summary(anova_d)
 # 5.4. Coeficiente de Varianza (CV)
 cv.model(anova_d)
 
-
 # 5.5. Verificación de Supuestos
 
 # Prueba de Normalidad (Shapiro-Wilk)
@@ -326,6 +358,36 @@ ggplot(datos_d, aes(x = trt, y = Rendimiento, fill = trt)) +
   theme(legend.position = "none")
 
 # 5.6. Alternativas
+
+datos_d <- datos_d %>%
+  mutate(Rendimiento_sqrt = sqrt(Rendimiento))
+
+anova_d_trans <- aov(Rendimiento_sqrt ~ trt + block, data = datos_d)
+summary(anova_d_trans)
+
+# Prueba de Normalidad (Shapiro-Wilk)
+residuos_d_trans <- residuals(anova_d_trans)
+shapiro_d_trans <- shapiro.test(residuos_d_trans)
+print("Prueba de Shapiro-Wilk para normalidad (Dataset D):")
+print(shapiro_d_trans)
+
+# Gráficos de Normalidad (Q-Q plots)
+qqnorm(residuals(anova_d_trans), main = "Q-Q Plot de Residuales (Dataset D)")
+qqline(residuals(anova_d_trans), col = "red")
+
+levene_d_trans <- leveneTest(Rendimiento_sqrt ~ trt, data = datos_d)
+print("Prueba de Levene para homogeneidad de varianzas (Dataset D):")
+print(levene_d_trans)
+
+# Crear un boxplot de Rendimiento por Tratamiento
+ggplot(datos_d, aes(x = trt, y = Rendimiento_sqrt, fill = trt)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Boxplot de Rendimiento por Tratamiento (Dataset D)",
+       x = "Tratamiento",
+       y = "Rendimiento") +
+  theme(legend.position = "none")
+
 
 # 5.6.1. Prueba No Paramétrica (Kruskal-Wallis)
 kruskal_d <- kruskal.test(Rendimiento ~ trt, data = datos_d)
