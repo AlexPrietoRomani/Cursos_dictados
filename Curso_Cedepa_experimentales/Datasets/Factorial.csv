@@ -1,0 +1,13 @@
+plots,block,Fertilizante,Tipo_Suelo,Tratamiento,Rendimiento
+101,1,Convencional,Arenoso,Convencional.Arenoso,60.9353482331577
+102,1,Orgánico,Arenoso,Orgánico.Arenoso,59.98014728978484
+103,1,Convencional,Franco Arenoso,Convencional.Franco Arenoso,76.49684971821105
+104,1,Orgánico,Franco Arenoso,Orgánico.Franco Arenoso,60.63728846957334
+105,2,Orgánico,Arenoso,Orgánico.Arenoso,55.405569835795546
+106,2,Orgánico,Franco Arenoso,Orgánico.Franco Arenoso,57.84583167444924
+107,2,Convencional,Franco Arenoso,Convencional.Franco Arenoso,60.464476169946934
+108,2,Convencional,Arenoso,Convencional.Arenoso,60.14949448462532
+109,3,Convencional,Franco Arenoso,Convencional.Franco Arenoso,57.20485871090356
+110,3,Orgánico,Franco Arenoso,Orgánico.Franco Arenoso,56.487434190429624
+111,3,Convencional,Arenoso,Convencional.Arenoso,51.955953408211926
+112,3,Orgánico,Arenoso,Orgánico.Arenoso,50.13751574916109

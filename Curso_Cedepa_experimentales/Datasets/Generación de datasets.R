@@ -273,3 +273,87 @@ print(variances)
 
 # Guardar el dataset en formato CSV
 write_csv(DBCA_datos_no_normal_homocedasticidad, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dictados\\Curso_Cedepa_experimentales\\Datasets\\DBCA_datos_no_normal_homocedasticidad.csv")
+
+# -----------------------------
+# 2.5. Dataset E: Diseño Factorial - Con normalidad y homogeneidad de varianzas
+# -----------------------------
+
+# **Cargar los paquetes necesarios**
+if(!require(agricolae)){
+  install.packages("agricolae")
+  library(agricolae)
+} else {
+  library(agricolae)
+}
+
+if(!require(car)){
+  install.packages("car")
+  library(car)
+} else {
+  library(car)
+}
+
+# **Definir los tratamientos**
+trt <- c(2, 2)  # Esto indica un factorial 2x2 (dos factores con dos niveles cada uno)
+
+# **Generar el diseño factorial en bloques completos al azar (RCBD) con 3 repeticiones**
+set.seed(123)
+outdesign <- design.ab(trt = trt, r = 3, serie = 2, design = "rcbd", seed = 123)
+
+# **Renombrar las columnas y los niveles de los factores**
+# Cambiar los nombres de las columnas
+names(outdesign$book) <- c("plots", "block", "Fertilizante", "Tipo_Suelo")
+
+# Recodificar los niveles de los factores
+outdesign$book$Fertilizante <- factor(outdesign$book$Fertilizante, 
+                                      levels = c(1,2),
+                                      labels = c("Orgánico", "Convencional"))
+
+outdesign$book$Tipo_Suelo <- factor(outdesign$book$Tipo_Suelo, 
+                                    levels = c(1,2),
+                                    labels = c("Arenoso", "Franco Arenoso"))
+
+# **Crear una columna para el tratamiento combinado**
+outdesign$book$Tratamiento <- interaction(outdesign$book$Fertilizante, outdesign$book$Tipo_Suelo)
+
+# **Definir las medias para cada combinación de tratamientos**
+medias <- c("Orgánico.Arenoso" = 50,
+            "Orgánico.Franco Arenoso" = 55,
+            "Convencional.Arenoso" = 60,
+            "Convencional.Franco Arenoso" = 65)
+
+# **Asignar los valores de Rendimiento asegurando normalidad y homogeneidad de varianzas**
+set.seed(123)  # Para reproducibilidad
+outdesign$book$Rendimiento <- rnorm(n = nrow(outdesign$book), 
+                                    mean = medias[as.character(outdesign$book$Tratamiento)], 
+                                    sd = 5)  # Usamos la misma desviación estándar para todos
+
+# **Visualizar el dataset final**
+print("Dataset final con Rendimiento:")
+print(outdesign$book)
+
+# **Verificación de los Supuestos**
+
+# Ajustar el modelo ANOVA
+modelo <- aov(Rendimiento ~ Fertilizante * Tipo_Suelo + factor(block), data = outdesign$book)
+
+# Obtener los residuos
+residuos <- residuals(modelo)
+
+# **Prueba de Normalidad (Shapiro-Wilk)**
+shapiro_test <- shapiro.test(residuos)
+print("Prueba de Shapiro-Wilk para normalidad de los residuos:")
+print(shapiro_test)
+
+# **Prueba de Homogeneidad de Varianzas (Levene)**
+levene_test <- leveneTest(Rendimiento ~ Tratamiento, data = outdesign$book)
+print("Prueba de Levene para homogeneidad de varianzas:")
+print(levene_test)
+
+# Guardar el dataset en formato CSV
+write_csv(outdesign$book, "C:\\Users\\alexa\\OneDrive\\Documentos\\Cursos_dictados\\Curso_Cedepa_experimentales\\Datasets\\Factorial.csv")
+
+
+# -----------------------------
+# 2.5. Dataset E: Diseño Factorial - Con normalidad y homogeneidad de varianzas
+# -----------------------------
