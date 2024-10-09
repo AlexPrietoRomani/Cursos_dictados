@@ -9,6 +9,9 @@
 # Limpiar el entorno de trabajo
 rm(list = ls())
 
+# Establecer la semilla para reproducibilidad
+set.seed(123)
+
 # Instalar y cargar paquetes necesarios
 # Descomenta las líneas de instalación si no tienes los paquetes instalados
 # install.packages("dplyr")
@@ -19,6 +22,7 @@ rm(list = ls())
 # install.packages("emmeans")
 # install.packages("ggplot2")
 # install.packages("reshape2")
+# install.packages("tidyr")
 
 library(dplyr)        # Manipulación de datos
 library(agricolae)    # Diseños experimentales y análisis
@@ -28,29 +32,211 @@ library(lme4)         # Modelos lineales mixtos
 library(emmeans)      # Comparaciones de medias ajustadas
 library(ggplot2)      # Visualizaciones avanzadas
 library(reshape2)     # Transformación de datos
+library(tidyr)        # Manipulación de datos
 
 # -----------------------------
 # 1. Diseños Avanzados
 # -----------------------------
 
-# 1.1. Diseño de bloques aumentados: concepto y uso en mejoramiento
+# 1.1. Diseño de Cuadrado Latino
 
-# Un diseño de bloques aumentados (Augmented Block Design, ABD) se utiliza cuando tenemos
-# tratamientos control (checks) y nuevos tratamientos (genotipos) que queremos evaluar.
-# Los controles se replican en todos los bloques, mientras que los nuevos tratamientos
-# aparecen una sola vez.
+# El diseño de Cuadrado Latino se utiliza para controlar dos fuentes de variabilidad
+# además del tratamiento. Se estructura en filas y columnas, donde el número de tratamientos
+# es igual al número de filas y columnas.
 
-# Supongamos que tenemos 3 controles y 15 nuevos genotipos a evaluar en 5 bloques.
+# Supongamos que queremos evaluar 4 variedades de trigo (A, B, C, D) en un campo con
+# variación en dos direcciones: fertilidad (filas) y humedad (columnas).
+
+# Definir los tratamientos
+tratamientos <- c("A", "B", "C", "D")
+
+# Generar el diseño de Cuadrado Latino utilizando el paquete agricolae
+diseño_cl <- design.lsd(trt = tratamientos, seed = 123, serie = 2)
+
+# Mostrar el diseño
+print("Diseño de Cuadrado Latino:")
+print(diseño_cl$book)
+
+# Visualizar el diseño en forma de matriz
+matriz_cl <- xtabs(~ Row + Col, data = diseño_cl$book, subset = TRT)
+print("Matriz del Diseño de Cuadrado Latino:")
+print(matriz_cl)
+
+# Simular datos de rendimiento
+set.seed(456)
+datos_cl <- diseño_cl$book %>%
+  mutate(
+    Rendimiento = rnorm(n(), mean = 50 + ifelse(TRT == "A", 5,
+                                                ifelse(TRT == "B", 0,
+                                                       ifelse(TRT == "C", -5, 10))),
+                        sd = 2)
+  )
+
+# Mostrar los datos simulados
+print("Datos Simulados para el Diseño de Cuadrado Latino:")
+print(datos_cl)
+
+# Convertir variables a factores
+datos_cl$Row <- as.factor(datos_cl$Row)
+datos_cl$Col <- as.factor(datos_cl$Col)
+datos_cl$TRT <- as.factor(datos_cl$TRT)
+
+# Ajustar el modelo ANOVA
+modelo_cl <- aov(Rendimiento ~ TRT + Row + Col, data = datos_cl)
+summary(modelo_cl)
+
+# Comparaciones múltiples con prueba de Tukey
+comparaciones_cl <- HSD.test(modelo_cl, "TRT", group = TRUE)
+print("Comparaciones Múltiples entre Tratamientos (Cuadrado Latino):")
+print(comparaciones_cl$groups)
+
+# Visualización de las medias por tratamiento
+ggplot(datos_cl, aes(x = TRT, y = Rendimiento)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Rendimiento por Variedad (Cuadrado Latino)",
+       x = "Variedad",
+       y = "Rendimiento")
+
+# 1.2. Diseño de Filas y Columnas
+
+# Este diseño es útil cuando tenemos variabilidad en dos direcciones pero el número de tratamientos
+# no es igual al número de filas y columnas.
+
+# Supongamos que queremos evaluar 6 tratamientos de fertilizantes en un campo con 3 filas y 4 columnas.
+
+# Definir los tratamientos
+tratamientos_fc <- paste("Fert", 1:6, sep = "_")
+
+# Generar el diseño de Filas y Columnas utilizando el paquete agricolae
+diseño_fc <- design.graeco(trt1 = tratamientos_fc[1:3], trt2 = tratamientos_fc[4:6], seed = 123, serie = 2)
+
+# Nota: En este ejemplo, utilizamos un diseño Grecolatino para acomodar más tratamientos.
+
+# Mostrar el diseño
+print("Diseño de Filas y Columnas:")
+print(diseño_fc$book)
+
+# Simular datos de rendimiento
+set.seed(789)
+datos_fc <- diseño_fc$book %>%
+  mutate(
+    Rendimiento = rnorm(n(), mean = 60 + as.numeric(as.factor(trt1))*2 - as.numeric(as.factor(trt2))*1.5, sd = 3)
+  )
+
+# Mostrar los datos simulados
+print("Datos Simulados para el Diseño de Filas y Columnas:")
+print(datos_fc)
+
+# Convertir variables a factores
+datos_fc$Row <- as.factor(datos_fc$Row)
+datos_fc$Col <- as.factor(datos_fc$Col)
+datos_fc$trt1 <- as.factor(datos_fc$trt1)
+datos_fc$trt2 <- as.factor(datos_fc$trt2)
+
+# Ajustar el modelo ANOVA
+modelo_fc <- aov(Rendimiento ~ trt1 + trt2 + Row + Col, data = datos_fc)
+summary(modelo_fc)
+
+# Comparaciones múltiples
+comparaciones_fc_trt1 <- HSD.test(modelo_fc, "trt1", group = TRUE)
+comparaciones_fc_trt2 <- HSD.test(modelo_fc, "trt2", group = TRUE)
+
+print("Comparaciones Múltiples entre Tratamientos trt1 (Filas y Columnas):")
+print(comparaciones_fc_trt1$groups)
+
+print("Comparaciones Múltiples entre Tratamientos trt2 (Filas y Columnas):")
+print(comparaciones_fc_trt2$groups)
+
+# Visualización de las medias por tratamiento trt1
+ggplot(datos_fc, aes(x = trt1, y = Rendimiento)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Rendimiento por Fertilizante trt1 (Filas y Columnas)",
+       x = "Fertilizante trt1",
+       y = "Rendimiento")
+
+# Visualización de las medias por tratamiento trt2
+ggplot(datos_fc, aes(x = trt2, y = Rendimiento)) +
+  geom_boxplot(fill = "orange") +
+  labs(title = "Rendimiento por Fertilizante trt2 (Filas y Columnas)",
+       x = "Fertilizante trt2",
+       y = "Rendimiento")
+
+# 1.3. Diseño de Parcelas Divididas (Split-Plot)
+
+# Este diseño se utiliza cuando hay factores que requieren diferentes tamaños de parcela.
+
+# Supongamos que queremos evaluar dos sistemas de riego (riego por goteo y aspersión) y tres variedades de maíz (V1, V2, V3).
+
+# Definir los factores
+sistemas_riego <- c("Goteo", "Aspersion")
+variedades_maiz <- c("V1", "V2", "V3")
+bloques <- c("Bloque1", "Bloque2", "Bloque3")
+
+# Generar el diseño de parcelas divididas
+diseño_pd <- design.split(
+  trt1 = sistemas_riego,
+  trt2 = variedades_maiz,
+  r = length(bloques),
+  design = "rcbd",
+  seed = 123,
+  serie = 2
+)
+
+# Mostrar el diseño
+print("Diseño de Parcelas Divididas:")
+print(diseño_pd$book)
+
+# Simular datos de rendimiento
+set.seed(321)
+datos_pd <- diseño_pd$book %>%
+  mutate(
+    Rendimiento = rnorm(n(), mean = ifelse(sistema == "Goteo", 70, 65) +
+                          ifelse(variedad == "V1", 5, ifelse(variedad == "V2", 0, -5)),
+                        sd = 4)
+  )
+
+# Mostrar los datos simulados
+print("Datos Simulados para el Diseño de Parcelas Divididas:")
+print(datos_pd)
+
+# Convertir variables a factores
+datos_pd$Block <- as.factor(datos_pd$Block)
+datos_pd$sistema <- as.factor(datos_pd$sistema)
+datos_pd$variedad <- as.factor(datos_pd$variedad)
+
+# Ajustar el modelo ANOVA para parcelas divididas
+modelo_pd <- aov(Rendimiento ~ sistema * variedad + Error(Block/sistema), data = datos_pd)
+summary(modelo_pd)
+
+# Obtener las medias ajustadas
+library(emmeans)
+medias_pd <- emmeans(modelo_pd, ~ sistema * variedad)
+
+# Comparaciones múltiples
+comparaciones_pd <- pairs(medias_pd, adjust = "tukey")
+print("Medias Ajustadas y Comparaciones (Parcelas Divididas):")
+print(medias_pd)
+print(comparaciones_pd)
+
+# Visualización de las interacciones
+interaction.plot(datos_pd$sistema, datos_pd$variedad, datos_pd$Rendimiento,
+                 fun = mean, type = "b", col = c("red", "blue"),
+                 pch = c(16, 18), xlab = "Sistema de Riego", ylab = "Rendimiento",
+                 main = "Interacción entre Sistema de Riego y Variedad")
+
+# 1.4. Diseño de Bloques Aumentados
+
+# Este diseño es útil cuando se tienen muchos tratamientos que no pueden ser completamente replicados.
+
+# Supongamos que queremos evaluar 3 controles y 15 nuevos genotipos de frijol en 5 bloques.
 
 # Definir los controles y nuevos tratamientos
 controles <- c("Control_A", "Control_B", "Control_C")
 nuevos_tratamientos <- paste("Genotipo", 1:15, sep = "_")
-
-# Número de bloques
 num_bloques <- 5
 
-# Crear el diseño ABD utilizando el paquete agricolae
-diseño_abd <- design.dau(
+# Crear el diseño de Bloques Aumentados utilizando el paquete agricolae
+diseño_ba <- design.dau(
   trt1 = controles,
   trt2 = nuevos_tratamientos,
   r = num_bloques,
@@ -59,215 +245,59 @@ diseño_abd <- design.dau(
 )
 
 # Mostrar el diseño
-print("Diseño de Bloques Aumentados (ABD):")
-print(diseño_abd$book)
+print("Diseño de Bloques Aumentados:")
+print(diseño_ba$book)
 
 # Simular datos de rendimiento
 set.seed(456)
-datos_abd <- diseño_abd$book %>%
+datos_ba <- diseño_ba$book %>%
   mutate(
     Rendimiento = ifelse(
       TRT %in% controles,
-      rnorm(n(), mean = 50, sd = 5),  # Controles
-      rnorm(n(), mean = 55, sd = 7)   # Nuevos genotipos
+      rnorm(n(), mean = 50, sd = 2),  # Controles
+      rnorm(n(), mean = 55, sd = 3)   # Nuevos genotipos
     )
   )
 
 # Mostrar los datos simulados
-print("Datos Simulados para ABD:")
-print(datos_abd)
-
-# 1.1.1. Análisis del ABD
-
-# Ajustar un modelo lineal mixto utilizando lme4
-# Consideramos los controles como efectos fijos y los genotipos como efectos aleatorios
+print("Datos Simulados para el Diseño de Bloques Aumentados:")
+print(datos_ba)
 
 # Convertir variables a factores
-datos_abd$Block <- as.factor(datos_abd$Block)
-datos_abd$TRT <- as.factor(datos_abd$TRT)
+datos_ba$Block <- as.factor(datos_ba$Block)
+datos_ba$TRT <- as.factor(datos_ba$TRT)
 
 # Crear una variable para identificar controles y nuevos genotipos
-datos_abd <- datos_abd %>%
+datos_ba <- datos_ba %>%
   mutate(
     Tipo = ifelse(TRT %in% controles, "Control", "Genotipo")
   )
 
-# Ajustar el modelo
-modelo_abd <- lmer(
+# Ajustar un modelo lineal mixto utilizando lme4
+# Consideramos los bloques como efectos aleatorios y los tratamientos como efectos fijos
+modelo_ba <- lmer(
   Rendimiento ~ TRT + (1 | Block),
-  data = datos_abd
+  data = datos_ba
 )
 
 # Resumen del modelo
-summary(modelo_abd)
+summary(modelo_ba)
 
 # Obtener las medias ajustadas de los tratamientos
-medias_abd <- emmeans(modelo_abd, "TRT")
+medias_ba <- emmeans(modelo_ba, "TRT")
 
-# Comparaciones múltiples
-comparaciones_abd <- pairs(medias_abd, adjust = "tukey")
-
-# Mostrar resultados
-print("Medias Ajustadas de los Tratamientos:")
-print(medias_abd)
-
-print("Comparaciones Múltiples entre Tratamientos:")
-print(comparaciones_abd)
-
-# Visualización de las medias ajustadas
-plot(medias_abd) + labs(title = "Medias Ajustadas de Rendimiento por Tratamiento (ABD)")
-
-# 1.2. Diseño de filas y columnas: control de variabilidad bidireccional 
-
-# Los diseños de filas y columnas, como el diseño de cuadrados latinos o diseños resolubles,
-# se utilizan para controlar la variabilidad en dos direcciones, por ejemplo, filas y columnas
-# en un campo experimental.
-
-# Supongamos que queremos implementar un diseño alfa-látice utilizando el paquete DiGGer
-
-# 1.2.1. Implementación de un diseño alfa-látice con DiGGer
-
-# Definir parámetros del diseño
-num_tratamientos <- 16
-bloque_size <- 4
-num_replicaciones <- 2
-
-# Generar el diseño utilizando DiGGer
-design_alfa <- DiGGer(
-  t = num_tratamientos,
-  r = num_replicaciones,
-  b = num_tratamientos / bloque_size,
-  k = bloque_size,
-  rowcol = TRUE
-)
-
-# Obtener el plan del diseño
-plan_alfa <- getDesign(design_alfa)
-
-# Convertir el plan a un data frame
-datos_alfa <- data.frame(
-  Row = as.vector(row(plan_alfa)),
-  Column = as.vector(col(plan_alfa)),
-  Tratamiento = as.vector(plan_alfa)
-)
-
-# Mostrar el diseño
-print("Diseño Alfa-Látice:")
-print(datos_alfa)
-
-# 1.2.2. Simulación y análisis de datos en diseño alfa-látice
-
-# Simular datos de rendimiento
-set.seed(789)
-datos_alfa <- datos_alfa %>%
-  mutate(
-    Rendimiento = rnorm(n(), mean = 50 + as.numeric(Tratamiento), sd = 5)
-  )
-
-# Convertir variables a factores
-datos_alfa$Row <- as.factor(datos_alfa$Row)
-datos_alfa$Column <- as.factor(datos_alfa$Column)
-datos_alfa$Tratamiento <- as.factor(datos_alfa$Tratamiento)
-
-# Ajustar el modelo lineal mixto
-modelo_alfa <- lmer(
-  Rendimiento ~ Tratamiento + (1 | Row) + (1 | Column),
-  data = datos_alfa
-)
-
-# Resumen del modelo
-summary(modelo_alfa)
-
-# Obtener las medias ajustadas de los tratamientos
-medias_alfa <- emmeans(modelo_alfa, "Tratamiento")
-
-# Comparaciones múltiples
-comparaciones_alfa <- pairs(medias_alfa, adjust = "tukey")
+# Comparaciones múltiples entre tratamientos
+comparaciones_ba <- pairs(medias_ba, adjust = "tukey")
 
 # Mostrar resultados
-print("Medias Ajustadas de los Tratamientos (Diseño Alfa-Látice):")
-print(medias_alfa)
+print("Medias Ajustadas de los Tratamientos (Bloques Aumentados):")
+print(medias_ba)
 
 print("Comparaciones Múltiples entre Tratamientos:")
-print(comparaciones_alfa)
+print(comparaciones_ba)
 
 # Visualización de las medias ajustadas
-plot(medias_alfa) + labs(title = "Medias Ajustadas de Rendimiento por Tratamiento (Alfa-Látice)")
-
-# 1.3. DBCA desbalanceados: manejo de datos faltantes 
-
-# En la práctica, a veces tenemos datos faltantes en nuestros experimentos.
-# Es importante saber cómo manejar diseños desbalanceados.
-
-# Supongamos que en nuestro experimento DBCA anterior (Clase 3), tenemos datos faltantes.
-
-# Reutilizaremos el diseño de bloques completos al azar (DBCA) de la Clase 3
-# Simularemos datos faltantes eliminando algunas observaciones
-
-# Generar el diseño DBCA original
-tratamientos <- c("Fertilizante_A", "Fertilizante_B", "Fertilizante_C", "Fertilizante_D")
-bloques <- c("Bloque_1", "Bloque_2", "Bloque_3", "Bloque_4")
-
-set.seed(123)
-diseño_dbca <- design.rcbd(trt = tratamientos, r = length(bloques), seed = 123)
-datos_dbca <- diseño_dbca$book
-
-# Simular datos de rendimiento
-set.seed(456)
-datos_dbca <- datos_dbca %>%
-  mutate(
-    Rendimiento = rnorm(n = n(), mean = ifelse(Trt == "Fertilizante_A", 50,
-                                               ifelse(Trt == "Fertilizante_B", 60,
-                                                      ifelse(Trt == "Fertilizante_C", 55, 65))) +
-                          ifelse(Block == "Bloque_1", -5,
-                                 ifelse(Block == "Bloque_2", 0,
-                                        ifelse(Block == "Bloque_3", 5, 10))),
-             sd = 2)
-  )
-
-# Introducir datos faltantes
-set.seed(789)
-datos_dbca_missing <- datos_dbca %>%
-  sample_frac(size = 0.9)  # Mantener el 90% de los datos
-
-# Mostrar los datos con valores faltantes
-print("Datos del DBCA con Datos Faltantes:")
-print(datos_dbca_missing)
-
-# 1.3.1. Análisis del DBCA desbalanceado
-
-# Convertir variables a factores
-datos_dbca_missing$Block <- as.factor(datos_dbca_missing$Block)
-datos_dbca_missing$Trt <- as.factor(datos_dbca_missing$Trt)
-
-# Ajustar el modelo ANOVA
-anova_dbca_unbalanced <- aov(Rendimiento ~ Trt + Block, data = datos_dbca_missing)
-summary(anova_dbca_unbalanced)
-
-# Interpretación:
-# - A pesar de los datos faltantes, el modelo ANOVA puede ajustarse.
-# - Sin embargo, la suma de cuadrados no es equilibrada y se utilizan métodos de estimación ajustados.
-
-# Comparaciones múltiples con medias ajustadas
-library(emmeans)
-medias_dbca_unbalanced <- emmeans(anova_dbca_unbalanced, "Trt")
-comparaciones_dbca_unbalanced <- pairs(medias_dbca_unbalanced, adjust = "tukey")
-
-# Mostrar resultados
-print("Medias Ajustadas de los Tratamientos (DBCA Desbalanceado):")
-print(medias_dbca_unbalanced)
-
-print("Comparaciones Múltiples entre Tratamientos:")
-print(comparaciones_dbca_unbalanced)
-
-# Visualización de las medias ajustadas
-plot(medias_dbca_unbalanced) + labs(title = "Medias Ajustadas de Rendimiento por Tratamiento (DBCA Desbalanceado)")
-
-# 1.4. Implementación básica de estos diseños en R 
-
-# Ya hemos visto ejemplos de implementación básica de diseños avanzados en R utilizando
-# los paquetes agricolae y DiGGer. Es importante familiarizarse con la documentación
-# de estos paquetes para explorar más opciones y funcionalidades.
+plot(medias_ba) + labs(title = "Medias Ajustadas de Rendimiento por Tratamiento (Bloques Aumentados)")
 
 # -----------------------------
 # 2. Resumen General y Consideraciones Prácticas
@@ -277,8 +307,10 @@ plot(medias_dbca_unbalanced) + labs(title = "Medias Ajustadas de Rendimiento por
 
 # - **DCA**: Cuando no hay fuentes de variabilidad conocidas.
 # - **DBCA**: Cuando hay una fuente de variabilidad que puede ser controlada mediante bloques.
-# - **Diseños Factoriales**: Cuando se estudian dos o más factores simultáneamente.
-# - **Diseños Avanzados (ABD, Alfa-Látice, etc.)**: Cuando se necesita controlar múltiples fuentes de variabilidad o se tienen restricciones experimentales.
+# - **Cuadrado Latino**: Cuando se necesitan controlar dos fuentes de variabilidad y el número de tratamientos es limitado.
+# - **Filas y Columnas**: Cuando se controlan dos fuentes de variabilidad y se requiere flexibilidad en el número de tratamientos.
+# - **Parcelas Divididas**: Cuando se tienen factores que requieren diferentes tamaños de parcela o diferentes niveles de manejo.
+# - **Bloques Aumentados**: Cuando se tienen muchos tratamientos y recursos limitados, utilizando controles replicados.
 
 # 2.2. Importancia del tamaño de muestra y poder estadístico 
 
@@ -288,9 +320,10 @@ plot(medias_dbca_unbalanced) + labs(title = "Medias Ajustadas de Rendimiento por
 
 # 2.3. Mejores prácticas para interpretación y presentación 
 
-# - Verificar los supuestos de los modelos estadísticos.
+# - Verificar los supuestos de los modelos estadísticos (normalidad, homocedasticidad).
 # - Utilizar visualizaciones para comunicar los resultados de manera efectiva.
 # - Presentar las medias ajustadas y comparaciones múltiples de manera clara.
+# - Documentar detalladamente el diseño y análisis para reproducibilidad.
 
 # -----------------------------
 # 3. Cierre y Recursos Adicionales
@@ -309,3 +342,4 @@ plot(medias_dbca_unbalanced) + labs(title = "Medias Ajustadas de Rendimiento por
 # - **R-bloggers**: https://www.r-bloggers.com/
 # - **The Comprehensive R Archive Network (CRAN)**: https://cran.r-project.org/
 # - **Cursos en línea**: Coursera, edX, y DataCamp ofrecen cursos sobre R y estadística.
+
