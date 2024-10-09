@@ -66,11 +66,21 @@ datos_bajos <- rbeta(100, shape1 = 5, shape2 = 2) * 10  # Escalar para tener val
 # Visualizar histograma antes de la transformación
 hist(datos_bajos, main = "Datos Originales - Valores Bajos", xlab = "Valor", col = "lightgreen")
 
+df <- data.frame(valores = datos_bajos)
+
+ggplot(df, aes(y = valores)) +
+  geom_boxplot()
+
 # Aplicar transformación de raíz cuadrada
 datos_raiz <- sqrt(datos_bajos)
 
 # Visualizar histograma después de la transformación
 hist(datos_raiz, main = "Datos Transformados - Raíz Cuadrada", xlab = "sqrt(Valor)", col = "orange")
+
+df <- data.frame(valores = datos_raiz)
+
+ggplot(df, aes(y = valores)) +
+  geom_boxplot()
 
 # Comparar normalidad con gráficos Q-Q
 par(mfrow = c(1, 2))
@@ -92,6 +102,11 @@ datos_negativos[sample(1:100, 10)] <- 0
 # Visualizar histograma antes de la transformación
 hist(datos_negativos, main = "Datos Originales - Negativos y Ceros", xlab = "Valor", col = "purple")
 
+df <- data.frame(valores = datos_negativos)
+
+ggplot(df, aes(y = valores)) +
+  geom_boxplot()
+
 # Ajustar datos para evitar valores negativos o cero
 constante <- abs(min(datos_negativos)) + 1
 datos_ajustados <- datos_negativos + constante
@@ -102,6 +117,11 @@ datos_potencia <- datos_ajustados^lambda
 
 # Visualizar histograma después de la transformación
 hist(datos_potencia, main = paste("Datos Transformados - Potencia (λ =", lambda, ")"), xlab = "Valor Transformado", col = "pink")
+
+df <- data.frame(valores = datos_potencia)
+
+ggplot(df, aes(y = valores)) +
+  geom_boxplot()
 
 # Comparar normalidad con gráficos Q-Q
 par(mfrow = c(1, 2))
@@ -220,12 +240,20 @@ par(mfrow = c(1, 1))
 
 datos_simulados <- read_csv("Datasets/Factorial.csv")
 
+datos_simulados <- read.delim("Clipboard")
+
 # Verificar los datos cargados
 head(datos_simulados)
+
 str(datos_simulados)
+
 summary(datos_simulados)
 
 # Ajustar el modelo ANOVA con interacción
+anova_factorial <- aov(Rendimiento ~ Fertilizante, data = datos_simulados)
+
+anova_factorial <- aov(Rendimiento ~ Fertilizante + blocks, data = datos_simulados)
+
 anova_factorial <- aov(Rendimiento ~ Fertilizante * Tipo_Suelo, data = datos_simulados)
 
 # Mostrar el resumen del ANOVA
@@ -237,6 +265,7 @@ cv.model <- function(modelo){
   return(paste("Coeficiente de Variación (CV):", round(CV, 2), "%"))
 }
 
+cv.model(anova_factorial)
 print(cv.model(anova_factorial))
 
 # Interpretación:
@@ -263,6 +292,8 @@ print(shapiro_test)
 # - Si el valor p es mayor que 0.05, no se rechaza la hipótesis nula de normalidad.
 # - Si el valor p es menor que 0.05, se rechaza la hipótesis de normalidad.
 
+hist(datos_simulados$Rendimiento)
+
 # Gráfico Q-Q de los residuales
 qqnorm(residuos)
 qqline(residuos, col = "red")
@@ -273,6 +304,9 @@ qqline(residuos, col = "red")
 levene_test <- leveneTest(Rendimiento ~ interaction(Fertilizante, Tipo_Suelo), data = datos_simulados)
 print("Prueba de Levene para homogeneidad de varianzas:")
 print(levene_test)
+
+ggplot(datos_simulados, aes(x = datos_simulados$Tratamiento, y= Rendimiento)) +
+  geom_boxplot()
 
 # Interpretación:
 # - Si el valor p es mayor que 0.05, no se rechaza la hipótesis nula de homogeneidad de varianzas.
@@ -319,12 +353,18 @@ tukey_fert <- HSD.test(anova_factorial, "Fertilizante", group = TRUE)
 print("Resultados de la Prueba de Tukey para Fertilizante:")
 print(tukey_fert$groups)
 
+bar.group(tukey_fert$groups, ylim = c(0,70))
+
 # Prueba de Tukey para el efecto principal de Tipo_Suelo
 tukey_suelo <- HSD.test(anova_factorial, "Tipo_Suelo", group = TRUE)
 print("Resultados de la Prueba de Tukey para Tipo de Suelo:")
 print(tukey_suelo$groups)
 
+bar.group(tukey_suelo$groups, ylim = c(0,70))
+
 # 4.3.2. Comparaciones múltiples para interacciones
+
+datos_simulados
 
 # Crear una nueva variable que combine los niveles de Fertilizante y Tipo_Suelo
 datos_simulados <- datos_simulados %>%
@@ -338,13 +378,23 @@ tukey_trat <- HSD.test(anova_interaccion, "Tratamiento", group = TRUE)
 print("Resultados de la Prueba de Tukey para las Interacciones:")
 print(tukey_trat$groups)
 
+bar.group(tukey_trat$groups, ylim = c(0,75))
+
 # Visualización de los resultados de comparaciones múltiples
+
+
+tuckey <- data.frame(tukey_trat$groups)
+
+tuckey <- tuckey %>%
+  mutate(Tratamiento = row.names(tuckey))
+
+str(tuckey)
 
 # Preparar datos para el gráfico
 media_tratamientos <- datos_simulados %>%
   group_by(Tratamiento) %>%
   summarise(Media = mean(Rendimiento), SD = sd(Rendimiento)) %>%
-  left_join(tukey_trat$groups %>% rename(Tratamiento = trt), by = "Tratamiento")
+  left_join(tuckey %>% rename(Tratamiento = Tratamiento), by = "Tratamiento")
 
 # Crear un gráfico de barras con las medias y letras de grupos homogéneos
 ggplot(media_tratamientos, aes(x = Tratamiento, y = Media, fill = Tratamiento)) +
