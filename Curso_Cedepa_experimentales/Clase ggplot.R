@@ -76,6 +76,14 @@ head(datos)
 ggplot(data = datos, aes(x = Fertilizante, y = Rendimiento)) +
   geom_point()
 
+datos <- data.frame(
+  Variedad = c("A","B","C","D"),
+  Rendimiento = c(50,60,55,40)
+)
+
+ggplot(datos, aes(x = Variedad, y = Rendimiento)) +
+  geom_bar(stat = "identity")
+
 # 3.2. Gráfico de Barras (Bar Plot)
 
 # Visualizar el rendimiento promedio por tipo de fertilizante.
@@ -87,7 +95,7 @@ medias_fertilizante <- datos %>%
 
 # Gráfico de barras
 ggplot(data = medias_fertilizante, aes(x = Fertilizante, y = Media_Rendimiento)) +
-  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_bar(stat = "identity", fill = "#AA0F43") +
   labs(title = "Rendimiento Promedio por Fertilizante",
        x = "Fertilizante",
        y = "Rendimiento Promedio")
@@ -173,6 +181,7 @@ datos_parcelas <- datos_parcelas %>%
 ggplot(data = datos_parcelas, aes(x = Columna, y = Fila, fill = Rendimiento)) +
   geom_tile() +
   scale_fill_gradient(low = "yellow", high = "red") +
+  theme_solid() +
   labs(title = "Mapa de Calor del Rendimiento en el Campo",
        x = "Columna",
        y = "Fila")
@@ -259,7 +268,7 @@ ggplot(data = datos, aes(x = Fertilizante, y = Rendimiento, shape = Variedad, co
     # Título del gráfico
     plot.title = element_text(
       family = "Arial",        # Tipo de letra
-      face = "bold",           # Estilo (bold, italic, bold.italic)
+      face = "bold.italic",           # Estilo (bold, italic, bold.italic)
       size = 16,               # Tamaño del texto
       hjust = 0.5              # Alineación horizontal (0 izquierda, 0.5 centro, 1 derecha)
     ),

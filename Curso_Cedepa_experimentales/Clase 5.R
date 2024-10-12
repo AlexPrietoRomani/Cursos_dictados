@@ -58,7 +58,7 @@ print("Diseño de Cuadrado Latino:")
 print(diseño_cl$book)
 
 # Visualizar el diseño en forma de matriz
-matriz_cl <- xtabs(~ Row + Col, data = diseño_cl$book, subset = TRT)
+matriz_cl <- xtabs(~ row + col, data = diseño_cl$book, subset = tratamientos)
 print("Matriz del Diseño de Cuadrado Latino:")
 print(matriz_cl)
 
@@ -66,9 +66,9 @@ print(matriz_cl)
 set.seed(456)
 datos_cl <- diseño_cl$book %>%
   mutate(
-    Rendimiento = rnorm(n(), mean = 50 + ifelse(TRT == "A", 5,
-                                                ifelse(TRT == "B", 0,
-                                                       ifelse(TRT == "C", -5, 10))),
+    Rendimiento = rnorm(n(), mean = 50 + ifelse(tratamientos == "A", 5,
+                                                ifelse(tratamientos == "B", 0,
+                                                       ifelse(tratamientos == "C", -5, 10))),
                         sd = 2)
   )
 
@@ -77,21 +77,21 @@ print("Datos Simulados para el Diseño de Cuadrado Latino:")
 print(datos_cl)
 
 # Convertir variables a factores
-datos_cl$Row <- as.factor(datos_cl$Row)
-datos_cl$Col <- as.factor(datos_cl$Col)
-datos_cl$TRT <- as.factor(datos_cl$TRT)
+datos_cl$Row <- as.factor(datos_cl$row)
+datos_cl$Col <- as.factor(datos_cl$col)
+datos_cl$TRT <- as.factor(datos_cl$tratamientos)
 
 # Ajustar el modelo ANOVA
-modelo_cl <- aov(Rendimiento ~ TRT + Row + Col, data = datos_cl)
+modelo_cl <- aov(Rendimiento ~ tratamientos + row + col, data = datos_cl)
 summary(modelo_cl)
 
 # Comparaciones múltiples con prueba de Tukey
-comparaciones_cl <- HSD.test(modelo_cl, "TRT", group = TRUE)
+comparaciones_cl <- HSD.test(modelo_cl, "tratamientos", group = TRUE)
 print("Comparaciones Múltiples entre Tratamientos (Cuadrado Latino):")
 print(comparaciones_cl$groups)
 
 # Visualización de las medias por tratamiento
-ggplot(datos_cl, aes(x = TRT, y = Rendimiento)) +
+ggplot(datos_cl, aes(x = tratamientos, y = Rendimiento)) +
   geom_boxplot(fill = "lightblue") +
   labs(title = "Rendimiento por Variedad (Cuadrado Latino)",
        x = "Variedad",
@@ -107,8 +107,11 @@ ggplot(datos_cl, aes(x = TRT, y = Rendimiento)) +
 # Definir los tratamientos
 tratamientos_fc <- paste("Fert", 1:6, sep = "_")
 
+trt1 <- tratamientos_fc[1:3]
+trt2 <- tratamientos_fc[4:6]
+
 # Generar el diseño de Filas y Columnas utilizando el paquete agricolae
-diseño_fc <- design.graeco(trt1 = tratamientos_fc[1:3], trt2 = tratamientos_fc[4:6], seed = 123, serie = 2)
+diseño_fc <- design.graeco(trt1 = trt1, trt2 = trt2, seed = 123, serie = 2)
 
 # Nota: En este ejemplo, utilizamos un diseño Grecolatino para acomodar más tratamientos.
 
@@ -134,7 +137,7 @@ datos_fc$trt1 <- as.factor(datos_fc$trt1)
 datos_fc$trt2 <- as.factor(datos_fc$trt2)
 
 # Ajustar el modelo ANOVA
-modelo_fc <- aov(Rendimiento ~ trt1 + trt2 + Row + Col, data = datos_fc)
+modelo_fc <- aov(Rendimiento ~ trt1 + trt2 + row + col, data = datos_fc)
 summary(modelo_fc)
 
 # Comparaciones múltiples
